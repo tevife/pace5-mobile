@@ -3,7 +3,6 @@ workflows:
     name: iOS Ad Hoc
     max_build_duration: 60
     instance_type: mac_mini_m2
-
     environment:
       node: 22.14.0
       xcode: 16.3
@@ -13,33 +12,26 @@ workflows:
       vars:
         BUNDLE_ID: com.pace5.app
         APPLE_TEAM_ID: N32B8VPXR4
-
     scripts:
-           - name: Install Node dependencies
+      - name: Install Node dependencies
         script: |
           pnpm config set minimumReleaseAge 0
           pnpm install --no-frozen-lockfile
       - name: Expo Prebuild
         script: npx expo prebuild --platform ios --clean
-
       - name: Install CocoaPods
         script: cd ios && pod install
-
       - name: Set up keychain
         script: keychain initialize
-
       - name: Fetch signing files
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_ADHOC \
             --create
-
       - name: Add certificates to keychain
         script: keychain add-certificates
-
       - name: Set Xcode code-signing profiles
         script: xcode-project use-profiles
-
       - name: Build archive
         script: |
           xcodebuild \
@@ -51,13 +43,8 @@ workflows:
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             clean archive \
             | xcpretty
-
       - name: Export IPA
         script: |
           xcodebuild -exportArchive \
             -archivePath "$CM_BUILD_DIR/pace5.xcarchive" \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath "$CM_BUILD_DIR/ipa"
-
-    artifacts:
-      - $CM_
+            -exportOptionsPlist Ex
