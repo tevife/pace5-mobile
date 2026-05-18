@@ -17,8 +17,8 @@ workflows:
         script: |
           pnpm config set minimumReleaseAge 0
           pnpm install --no-frozen-lockfile
-      - name: Expo Prebuild
-        script: npx expo prebuild --platform ios --clean
+       - name: Expo Prebuild
+        script: npx expo prebuild --platform ios --clean --no-install
       - name: Install CocoaPods
         script: cd ios && pod install
       - name: Set up keychain
