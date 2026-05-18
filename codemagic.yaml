@@ -15,9 +15,10 @@ workflows:
         APPLE_TEAM_ID: N32B8VPXR4
 
     scripts:
-      - name: Install Node dependencies
-        script: pnpm install --frozen-lockfile
-
+           - name: Install Node dependencies
+        script: |
+          pnpm config set minimumReleaseAge 0
+          pnpm install --no-frozen-lockfile
       - name: Expo Prebuild
         script: npx expo prebuild --platform ios --clean
 
