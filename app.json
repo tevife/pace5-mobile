@@ -1,0 +1,77 @@
+{
+  "expo": {
+    "name": "pace5",
+    "slug": "app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "pace5",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "associatedDomains": [
+        "applinks:pace5.com.br"
+      ],
+      "bundleIdentifier": "com.pace5.app",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "O Pace5 acessa suas corridas, passos e frequência cardíaca para sincronizar seus treinos.",
+        "NSHealthUpdateUsageDescription": "O Pace5 pode registrar treinos no Apple Health."
+      }
+    },
+    "android": {
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "pace5.com.br"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "package": "com.pace5.app"
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://replit.com/"
+        }
+      ],
+      "expo-font",
+      "expo-web-browser",
+      [
+        "react-native-health",
+        {
+          "NSHealthShareUsageDescription": "O Pace5 precisa de acesso ao Apple Health para analisar seus treinos de corrida e gerar recomendações com Inteligência Artificial.",
+          "NSHealthUpdateUsageDescription": "O Pace5 precisa de acesso ao Apple Health para salvar seus dados de performance."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "17900097-f121-43b5-baf7-3572b9baf1da"
+      }
+    },
+    "owner": "viniciuscruz"
+  }
+}

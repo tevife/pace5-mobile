@@ -1,0 +1,17 @@
+{
+  "_deploy_checklist": [
+    "1. Replace TEAMID with your Apple Team ID (developer.apple.com > Membership > Team ID)",
+    "2. Remove this _deploy_checklist key before uploading",
+    "3. Host at https://pace5.com.br/.well-known/apple-app-site-association (no .json extension)",
+    "4. Verify Content-Type: application/json and no redirect on that URL"
+  ],
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.com.pace5.app",
+        "paths": ["*"]
+      }
+    ]
+  }
+}

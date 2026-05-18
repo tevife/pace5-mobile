@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "pace5-mobile"
+version = "1.0.0"
+id = "artifacts/pace5-mobile"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 23745
+
+[services.development]
+run = "pnpm --filter @workspace/pace5-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pace5-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/pace5-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "23745"
+BASE_PATH = "/"
