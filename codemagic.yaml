@@ -8,9 +8,6 @@ workflows:
       node: 22.14.0
       xcode: 16.3
       cocoapods: default
-      # Configure this group in Codemagic UI → Teams → Integrations → App Store Connect
-      # with APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID,
-      # APP_STORE_CONNECT_PRIVATE_KEY and CERTIFICATE_PRIVATE_KEY
       groups:
         - apple_signing
       vars:
@@ -18,13 +15,10 @@ workflows:
         APPLE_TEAM_ID: N32B8VPXR4
 
     scripts:
-      - name: Install pnpm
-        script: npm install -g pnpm@latest
-
       - name: Install Node dependencies
         script: pnpm install --frozen-lockfile
 
-      - name: Expo Prebuild — generate ios/ folder
+      - name: Expo Prebuild
         script: npx expo prebuild --platform ios --clean
 
       - name: Install CocoaPods
@@ -33,7 +27,7 @@ workflows:
       - name: Set up keychain
         script: keychain initialize
 
-      - name: Fetch signing files from App Store Connect
+      - name: Fetch signing files
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_ADHOC \
@@ -65,13 +59,4 @@ workflows:
             -exportPath "$CM_BUILD_DIR/ipa"
 
     artifacts:
-      - $CM_BUILD_DIR/ipa/*.ipa
-      - $CM_BUILD_DIR/pace5.xcarchive
-
-    publishing:
-      email:
-        recipients:
-          - vinicius@pace5.com.br
-        notify:
-          success: true
-          failure: true
+      - $CM_
