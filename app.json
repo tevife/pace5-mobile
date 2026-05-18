@@ -22,6 +22,10 @@
       "infoPlist": {
         "NSHealthShareUsageDescription": "O Pace5 acessa suas corridas, passos e frequência cardíaca para sincronizar seus treinos.",
         "NSHealthUpdateUsageDescription": "O Pace5 pode registrar treinos no Apple Health."
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.background-delivery": true
       }
     },
     "android": {

@@ -312,10 +312,11 @@ export function SiteWebView({ url }: SiteWebViewProps) {
     }
   };
 
-  // Register this WebView as the target for bridge injections
+  // Register this WebView instance with the bridge.
+  // registerInjectJS now returns an unsubscribe fn — call it on unmount.
   React.useEffect(() => {
-    registerInjectJS((js) => webviewRef.current?.injectJavaScript(js));
-    return () => registerInjectJS(null);
+    const injectFn = (js: string) => webviewRef.current?.injectJavaScript(js);
+    return registerInjectJS(injectFn);
   }, []);
 
   const handleMessage = (event: WebViewMessageEvent) => {

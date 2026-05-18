@@ -1,15 +1,23 @@
 /**
  * webViewBridge — module-level singleton that lets non-React code inject
- * JavaScript into the active SiteWebView and receive results back via
+ * JavaScript into any active SiteWebView and receive results back via
  * postMessage / onMessage.
  *
+ * Multiple SiteWebView instances (one per tab) can be registered simultaneously.
+ * All of them share the same session cookies, so any one of them can execute
+ * the authenticated fetch. We use the first available WebView and wait for a
+ * single postMessage response.
+ *
  * Usage pattern:
- *   1. SiteWebView calls registerInjectJS() on mount / unmount.
- *   2. Any code calls postToWebView() to inject JS.
- *   3. The injected JS posts back { type: 'healthSync', ... }.
- *   4. SiteWebView's handleMessage calls dispatchHealthSyncResult().
- *   5. The awaiting Promise in healthSync.ts resolves / rejects.
+ *   1. SiteWebView calls registerInjectJS(fn) on mount → receives unsubscribe().
+ *   2. On unmount SiteWebView calls the returned unsubscribe().
+ *   3. healthSync.ts calls syncViaWebView(workouts) — picks any registered WebView.
+ *   4. Injected JS posts back { type: 'healthSync', ... }.
+ *   5. SiteWebView's handleMessage calls dispatchHealthSyncResult().
+ *   6. The awaiting Promise in healthSync.ts resolves / rejects.
  */
+
+type InjectFn = (js: string) => void;
 
 type HealthSyncCallback = {
   resolve: (value: { synced: number; message?: string }) => void;
@@ -17,43 +25,48 @@ type HealthSyncCallback = {
   timer: ReturnType<typeof setTimeout>;
 };
 
-let _injectJS: ((js: string) => void) | null = null;
+// All currently mounted SiteWebView inject functions
+const _registeredFns = new Set<InjectFn>();
 let _pendingHealthSync: HealthSyncCallback | null = null;
 
-/** Called by SiteWebView on mount; pass null on unmount. */
-export function registerInjectJS(fn: ((js: string) => void) | null): void {
-  _injectJS = fn;
+/**
+ * Register a WebView's inject function.
+ * Returns an unsubscribe callback — call it from the effect cleanup.
+ */
+export function registerInjectJS(fn: InjectFn): () => void {
+  _registeredFns.add(fn);
+  return () => _registeredFns.delete(fn);
 }
 
-/** Inject arbitrary JS into the active WebView. Returns false if no WebView is mounted. */
-export function postToWebView(js: string): boolean {
-  if (!_injectJS) return false;
-  _injectJS(js);
-  return true;
+/** Pick any available WebView inject function, or null if none mounted. */
+function getAnyInjectFn(): InjectFn | null {
+  const [first] = _registeredFns;
+  return first ?? null;
 }
 
 /**
- * Inject JS that POSTs workouts to the Pace5 API using the WebView's session
- * cookies, then waits for the `healthSync` postMessage response.
- *
- * Rejects after 30 s if no response arrives.
+ * Collect workouts natively, then inject a fetch() into the active WebView
+ * so the request carries the session cookies automatically.
+ * Resolves when the WebView posts back { type: 'healthSync', ok: true }.
+ * Rejects after 30 s or on API error.
  */
 export function syncViaWebView(
   workouts: object[]
 ): Promise<{ synced: number; message?: string }> {
   return new Promise((resolve, reject) => {
-    if (!_injectJS) {
+    const injectFn = getAnyInjectFn();
+    if (!injectFn) {
       return reject(
         new Error(
-          "Abra a aba Corridas primeiro e tente sincronizar novamente."
+          "Nenhuma aba do Pace5 está aberta. Abra a aba Corridas e tente novamente."
         )
       );
     }
 
-    // Cancel any previous pending call
+    // Cancel any stale pending sync
     if (_pendingHealthSync) {
       clearTimeout(_pendingHealthSync.timer);
-      _pendingHealthSync.reject(new Error("Cancelled"));
+      _pendingHealthSync.reject(new Error("Cancelled by new sync request"));
       _pendingHealthSync = null;
     }
 
@@ -64,9 +77,10 @@ export function syncViaWebView(
 
     _pendingHealthSync = { resolve, reject, timer };
 
-    // Serialise the payload as a JS literal so we don't have to worry about
-    // quote escaping inside the template string.
+    // Double-serialise the payload: the outer JSON.stringify produces a JS
+    // string literal that the injected code can safely pass to fetch().
     const payloadLiteral = JSON.stringify(JSON.stringify({ workouts }));
+    const syncedCount = workouts.length;
 
     const js = `
 (function() {
@@ -78,16 +92,18 @@ export function syncViaWebView(
     body: body
   })
   .then(function(r) {
-    return r.text().then(function(t) { return { ok: r.ok, status: r.status, text: t }; });
+    return r.text().then(function(t) {
+      return { ok: r.ok, status: r.status, text: t };
+    });
   })
   .then(function(x) {
     var msg;
-    try { msg = JSON.parse(x.text).message; } catch(e) { msg = x.text; }
+    try { msg = JSON.parse(x.text).message; } catch(e) { msg = undefined; }
     window.ReactNativeWebView.postMessage(JSON.stringify({
       type: 'healthSync',
       ok: x.ok,
       status: x.status,
-      synced: ${workouts.length},
+      synced: ${syncedCount},
       message: msg
     }));
   })
@@ -101,7 +117,7 @@ export function syncViaWebView(
 })(); true;
 `;
 
-    _injectJS(js);
+    injectFn(js);
   });
 }
 
