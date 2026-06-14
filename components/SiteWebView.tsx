@@ -11,13 +11,17 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { WebView, WebViewMessageEvent, WebViewNavigation, WebViewRequest } from "react-native-webview";
+import { WebView, WebViewMessageEvent, WebViewNavigation } from "react-native-webview";
 
 import { useBiometric } from "@/contexts/BiometricContext";
 import { useColors } from "@/hooks/useColors";
 import { useTabBar } from "@/contexts/TabBarContext";
 import { consumePendingDeepLink, registerDeepLinkListener } from "@/utils/deepLink";
-import { registerInjectJS, dispatchHealthSyncResult } from "@/utils/webViewBridge";
+import {
+  registerInjectJS,
+  dispatchHealthSyncResult,
+  dispatchCalendarRacesResult,
+} from "@/utils/webViewBridge";
 
 export const PACE5_TOKEN_KEY = "pace5_auth_token";
 
@@ -332,6 +336,8 @@ export function SiteWebView({ url }: SiteWebViewProps) {
         SecureStore.setItemAsync(PACE5_TOKEN_KEY, data.token).catch(() => {});
       } else if (data.type === "healthSync") {
         dispatchHealthSyncResult(data);
+      } else if (data.type === "calendarRaces") {
+        dispatchCalendarRacesResult(data);
       }
     } catch {}
   };
@@ -349,7 +355,7 @@ export function SiteWebView({ url }: SiteWebViewProps) {
     return () => sub.remove();
   }, [canGoBack]);
 
-  const handleShouldStartLoadWithRequest = (request: WebViewRequest): boolean => {
+  const handleShouldStartLoadWithRequest = (request: WebViewNavigation & { isTopFrame?: boolean }): boolean => {
     const { url: reqUrl } = request;
     const isPace5 = /^https?:\/\/(www\.)?pace5\.com\.br/.test(reqUrl);
     if (isPace5) return true;

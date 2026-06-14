@@ -16,16 +16,17 @@
     "ios": {
       "supportsTablet": false,
       "associatedDomains": [
+        "applinks:pace5.com.br",
         "applinks:pace5.com.br"
       ],
       "bundleIdentifier": "com.pace5.app",
       "infoPlist": {
-        "NSHealthShareUsageDescription": "O Pace5 acessa suas corridas, passos e frequência cardíaca para sincronizar seus treinos.",
-        "NSHealthUpdateUsageDescription": "O Pace5 pode registrar treinos no Apple Health."
+        "NSHealthShareUsageDescription": "O Pace5 acessa suas corridas, passos, calorias, distância e frequência cardíaca para sincronizar seus treinos.",
+        "NSHealthUpdateUsageDescription": "O Pace5 solicita esta permissão apenas se você permitir salvar dados de performance no Apple Health.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "entitlements": {
-        "com.apple.developer.healthkit": true,
-        "com.apple.developer.healthkit.background-delivery": true
+        "com.apple.developer.healthkit": true
       }
     },
     "android": {
@@ -60,10 +61,10 @@
       "expo-font",
       "expo-web-browser",
       [
-        "react-native-health",
+        "@kingstinct/react-native-healthkit",
         {
           "NSHealthShareUsageDescription": "O Pace5 precisa de acesso ao Apple Health para analisar seus treinos de corrida e gerar recomendações com Inteligência Artificial.",
-          "NSHealthUpdateUsageDescription": "O Pace5 precisa de acesso ao Apple Health para salvar seus dados de performance."
+          "NSHealthUpdateUsageDescription": "O Pace5 precisa desta descrição para builds iOS com HealthKit habilitado."
         }
       ]
     ],

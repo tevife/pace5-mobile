@@ -2,6 +2,10 @@
 
 # dependencies
 node_modules/
+.pnpm-store/
+.cocoapods-home/
+.cocoapods-cache/
+server/data/
 
 # Expo
 .expo/
